@@ -47,7 +47,7 @@ Vagrant.configure(2) do |config|
   #
   config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
-    vb.gui = true
+    # vb.gui = true
 
     # Customize the amount of memory on the VM:
     vb.memory = "1024"
@@ -67,20 +67,35 @@ Vagrant.configure(2) do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
   #
+
+  # upload two sample keys
+  config.vm.provision "file", source: "../keys/key1.gpg", destination: "key1.gpg"
+  config.vm.provision "file", source: "../keys/key2.gpg", destination: "key2.gpg"
+
   # installs xfce, kleopatra, fixes an apt-get bug, and sets keyboard to DE
   config.vm.provision "shell", inline: <<-SHELL
-    sudo apt-get update
-    sudo apt-get install -y xfce4
-    sudo apt-get install -y kgpg
-    sudo apt-get install -y kleopatra
-    sudo apt-get install -y lightdm
-    sudo dpkg-reconfigure lightdm
-    sudo apt-get install -y lightdm-gtk-greeter
-    sudo rm /usr/share/lightdm/lightdm.conf.d/50-ubuntu.conf
-    sudo sed -ie '/^XKBLAYOUT=/s/".*"/"de"/' /etc/default/keyboard
-    sudo /usr/share/debconf/fix_db.pl
-    sudo apt-get install
+    apt-get update
+    apt-get install -y xfce4
+    apt-get install -y kgpg
+    apt-get install -y kleopatra
+    apt-get install -y lightdm
+    dpkg-reconfigure lightdm
+    apt-get install -y lightdm-gtk-greeter
+    rm /usr/share/lightdm/lightdm.conf.d/50-ubuntu.conf
+    sed -ie '/^XKBLAYOUT=/s/".*"/"de"/' /etc/default/keyboard
+    /usr/share/debconf/fix_db.pl
+    apt-get install
   SHELL
 
-  # then stick in home-built libo versions
+  # pulls latest master from TDF, imports two sample keys
+  config.vm.provision "shell", privileged: false, inline: <<-SHELL
+    echo 'Downloading latest libreoffice'
+    wget -q http://dev-builds.libreoffice.org/daily/master/Linux-rpm_deb-x86_64@70-TDF/current/master~2017-03-07_02.52.26_LibreOfficeDev_5.4.0.0.alpha0_Linux_x86-64_deb.tar.gz
+    tar -xf master~2017-03-07_02.52.26_LibreOfficeDev_5.4.0.0.alpha0_Linux_x86-64_deb.tar.gz
+    sudo bash -c 'cd LibreOffice*/DEBS && dpkg -i *.deb'
+    rm -rf master~2017-03-07_02.52.26_LibreOfficeDev_5.4.0.0.alpha0_Linux_x86-64_deb.tar.gz LibreOffice*
+    gpg --import ~/key1.gpg
+    gpg --import ~/key2.gpg
+  SHELL
+
 end
