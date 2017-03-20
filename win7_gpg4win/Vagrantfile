@@ -1,3 +1,4 @@
+# coding: utf-8
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
@@ -26,13 +27,19 @@ Vagrant.configure("2") do |config|
   config.winrm.username = "IEUser"
   config.winrm.password = "Passw0rd!"
 
-  config.vm.provision :shell, inline: "@powershell -NoProfile -ExecutionPolicy unrestricted -Command \"iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))\" && SET PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
-  config.vm.provision :shell, inline: "choco install -y puppet"
+  # install gpg4win, and latest libreoffice master
+  config.vm.provision :shell, inline: "iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))"
+  config.vm.provision :shell, inline: "C:\\ProgramData\\chocolatey\\bin\\choco install -y gpg4win"
+  config.vm.provision :shell, inline: "(new-object net.webclient).DownloadFile('http://librebuildix.cib.de:8080/job/LibreOffice%20master%20Win%2032+64bit/distro=LibreOfficeWin32,label=windows-builder/lastSuccessfulBuild/artifact/*zip*/archive.zip', 'C:\\Windows\\Temp\\libo.zip')"
+  config.vm.provision :shell, inline: "$shell = new-object -com shell.application ; New-Item -ItemType Directory -Path 'C:\\Windows\\Temp\\libo' -Force -WarningAction SilentlyContinue ; $shell.namespace('C:\\Windows\\Temp\\libo').copyhere($shell.namespace('C:\\Windows\\Temp\\libo.zip').items())"
+  config.vm.provision :shell, inline: "$shell = new-object -com shell.application ; foreach ($item in $shell.namespace('C:\\Windows\\Temp\\libo\\archive').items()) { Write-Output $item ; Start-Process 'msiexec' -ArgumentList (\"/qb /i \" + $item.Path + \" /L* C:\\Windows\\Temp\\libo.log\") -NoNewWindow -Wait }"
+  config.vm.provision :shell, inline: "Remove-Item -Recurse -Force 'C:\\Windows\\Temp\\libo' ; Remove-Item -Recurse -Force 'C:\\Windows\\Temp\\libo.zip'"
 
   config.vm.guest = :windows
   config.vm.provider "virtualbox" do |vb|
-    # first setup requires gui to be enabled so scripts can be executed in virtualbox guest screen
-    vb.gui = true
+    # first setup requires gui to be enabled so scripts can be
+    # executed in virtualbox guest screen - disable now
+    #vb.gui = true
     vb.customize ["modifyvm", :id, "--memory", "2048"]
     vb.customize ["modifyvm", :id, "--vram", "128"]
     vb.customize ["modifyvm", :id,  "--cpus", "1"]
