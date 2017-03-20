@@ -72,13 +72,16 @@ Vagrant.configure(2) do |config|
   config.vm.provision "file", source: "../keys/key1.gpg", destination: "key1.gpg"
   config.vm.provision "file", source: "../keys/key2.gpg", destination: "key2.gpg"
 
-  # installs xfce, kleopatra, fixes an apt-get bug, and sets keyboard to DE
+  # installs xfce, kleopatra, fixes an apt-get bug, and sets keyboard
+  # and locale to DE
   config.vm.provision "shell", inline: <<-SHELL
     apt-get update
+    apt-get install language-pack-de
     apt-get install -y xfce4
     apt-get install -y kgpg
     apt-get install -y kleopatra
     apt-get install -y lightdm
+    update-locale LANG=de_DE.UTF-8
     dpkg-reconfigure lightdm
     apt-get install -y lightdm-gtk-greeter
     rm /usr/share/lightdm/lightdm.conf.d/50-ubuntu.conf
