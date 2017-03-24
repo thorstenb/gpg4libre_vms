@@ -75,33 +75,31 @@ Vagrant.configure(2) do |config|
 
   # installs xfce, kleopatra, fixes an apt-get bug, and sets keyboard
   # and locale to DE
-  config.vm.provision "shell", inline: <<-SHELL
-    apt-get update
-    apt-get install -y language-pack-de
-    apt-get install -y xfce4
-    apt-get install -y kgpg
-    apt-get install -y kleopatra
-    apt-get install -y lightdm
-    update-locale LANG=de_DE.UTF-8
-    dpkg-reconfigure lightdm
-    apt-get install -y lightdm-gtk-greeter
-    sed -ie '/^XKBLAYOUT=/s/".*"/"de"/' /etc/default/keyboard
-    /usr/share/debconf/fix_db.pl
-    apt-get install -y
-  SHELL
+  config.vm.provision :shell, inline: "apt-get update"
+  config.vm.provision :shell, inline: "apt-get install -y language-pack-de"
+  config.vm.provision :shell, inline: "update-locale LANG=de_DE.UTF-8"
+  config.vm.provision :shell, inline: "apt-get install -y xfce4 kgpg kleopatra lightdm || true"
+  config.vm.provision :shell, inline: "dpkg-reconfigure lightdm"
+  config.vm.provision :shell, inline: "apt-get install -y lightdm-gtk-greeter"
+  config.vm.provision :shell, inline: "sed -ie '/^XKBLAYOUT=/s/\".*\"/\"de\"/' /etc/default/keyboard"
+  config.vm.provision :shell, inline: "/usr/share/debconf/fix_db.pl && apt-get install -y"
 
   # pulls latest master from Jenkins, imports two sample keys
-  config.vm.provision "shell", privileged: false, inline: <<-SHELL
+  config.vm.provision :shell, privileged: false, inline: <<-SHELL
     echo 'Downloading latest libreoffice'
     wget -q http://librebuildix.cib.de:8080/job/LibreOffice%20master%20Linux%2064bit/label=linux-builder/lastSuccessfulBuild/artifact/LibreOffice_5.4.0.0.alpha0_Linux_x86-64_deb.tar.gz
-    wget -q http://librebuildix.cib.de:8080/job/LibreOffice%20master%20Linux%2064bit/label=linux-builder/lastSuccessfulBuild/artifact/LibreOffice_5.4.0.0.alpha0_Linux_x86-64_deb_langpack_de.tar.gz
     tar -xf LibreOffice_5.4.0.0.alpha0_Linux_x86-64_deb.tar.gz
-    tar -xf LibreOffice_5.4.0.0.alpha0_Linux_x86-64_deb_langpack_de.tar.gz
     sudo bash -c 'cd LibreOffice_5.4.0.0.alpha0_Linux_x86-64_deb/DEBS && dpkg -i *.deb'
+  SHELL
+  config.vm.provision :shell, privileged: false, inline: <<-SHELL
+    echo 'Installing latest libreoffice langpacks'
+    wget -q http://librebuildix.cib.de:8080/job/LibreOffice%20master%20Linux%2064bit/label=linux-builder/lastSuccessfulBuild/artifact/LibreOffice_5.4.0.0.alpha0_Linux_x86-64_deb_langpack_de.tar.gz
+    tar -xf LibreOffice_5.4.0.0.alpha0_Linux_x86-64_deb_langpack_de.tar.gz
     sudo bash -c 'cd LibreOffice_5.4.0.0.alpha0_Linux_x86-64_deb_langpack_de/DEBS/ && dpkg -i *.deb'
+  SHELL
+  config.vm.provision :shell, privileged: false, inline: <<-SHELL
     rm -rf LibreOffice*
-    gpg --import ~/key1.gpg
-    gpg --import ~/key2.gpg
+    gpg --import ~/key1.gpg && gpg --import ~/key2.gpg
   SHELL
 
 end
