@@ -14,6 +14,14 @@ What this does:
 * stand up VirtualBoxes with gpg stuff and libreoffice readily
   installed
 
+HowTo produce an .ova file:
+
+* `vagrant up` -> shouldn't produce any errors
+* `vagrant halt`
+* `VBoxManage export '<box_name>' --output <output/box_name.ova>`
+* `VBoxManage unregistervm --delete '<box_name>'`
+
+
 Fine print:
 
 * so the win7 box do not have any remote deployment enabled out of the
