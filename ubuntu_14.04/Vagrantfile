@@ -14,7 +14,7 @@ Vagrant.configure(2) do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "ubuntu/trusty64"
+  config.vm.box = "v0rtex/xenial64-iso"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -48,7 +48,7 @@ Vagrant.configure(2) do |config|
   config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
     # vb.gui = true
-    vb.name = "gpg4libre Ubuntu 14.04"
+    vb.name = "gpg4libre Ubuntu 16.04"
 
     # Customize the amount of memory on the VM:
     vb.memory = "1024"
@@ -87,15 +87,15 @@ Vagrant.configure(2) do |config|
   # pulls latest master from Jenkins, imports two sample keys
   config.vm.provision :shell, privileged: false, inline: <<-SHELL
     echo 'Downloading latest libreoffice'
-    wget -q http://librebuildix.cib.de:8080/job/LibreOffice%20master%20Linux%2064bit/label=linux-builder/lastSuccessfulBuild/artifact/LibreOffice_5.4.0.0.alpha0_Linux_x86-64_deb.tar.gz
-    tar -xf LibreOffice_5.4.0.0.alpha0_Linux_x86-64_deb.tar.gz
-    sudo bash -c 'cd LibreOffice_5.4.0.0.alpha0_Linux_x86-64_deb/DEBS && dpkg -i *.deb'
+    wget -q http://librebuildix.cib.de:8080/job/LibreOffice%20master%20Linux%2064bit/label=linux-builder/lastSuccessfulBuild/artifact/LibreOffice_6.0.0.0.alpha0_Linux_x86-64_deb.tar.gz || (echo "Cannot download LibreOffice" && exit 1)
+    tar -xf LibreOffice_6.0.0.0.alpha0_Linux_x86-64_deb.tar.gz
+    sudo bash -c 'cd LibreOffice_6.0.0.0.alpha0_Linux_x86-64_deb/DEBS && dpkg -i *.deb'
   SHELL
   config.vm.provision :shell, privileged: false, inline: <<-SHELL
     echo 'Installing latest libreoffice langpacks'
-    wget -q http://librebuildix.cib.de:8080/job/LibreOffice%20master%20Linux%2064bit/label=linux-builder/lastSuccessfulBuild/artifact/LibreOffice_5.4.0.0.alpha0_Linux_x86-64_deb_langpack_de.tar.gz
-    tar -xf LibreOffice_5.4.0.0.alpha0_Linux_x86-64_deb_langpack_de.tar.gz
-    sudo bash -c 'cd LibreOffice_5.4.0.0.alpha0_Linux_x86-64_deb_langpack_de/DEBS/ && dpkg -i *.deb'
+    wget -q http://librebuildix.cib.de:8080/job/LibreOffice%20master%20Linux%2064bit/label=linux-builder/lastSuccessfulBuild/artifact/LibreOffice_6.0.0.0.alpha0_Linux_x86-64_deb_langpack_de.tar.gz || (echo "Cannot download LibreOffice language pack" && exit 1)
+    tar -xf LibreOffice_6.0.0.0.alpha0_Linux_x86-64_deb_langpack_de.tar.gz
+    sudo bash -c 'cd LibreOffice_6.0.0.0.alpha0_Linux_x86-64_deb_langpack_de/DEBS/ && dpkg -i *.deb'
   SHELL
   config.vm.provision :shell, privileged: false, inline: <<-SHELL
     rm -rf LibreOffice*
